@@ -1,44 +1,20 @@
-﻿// csharp
-using Grocery.Core.Data.Helpers;
+﻿using Grocery.Core.Data.Helpers;
 using Microsoft.Data.Sqlite;
-using System;
-using System.Collections.Generic;
-using System.IO;
 
 namespace Grocery.Core.Data
 {
     public abstract class DatabaseConnection : IDisposable
     {
         protected SqliteConnection Connection { get; }
-        private readonly string databaseName;
+        string databaseName;
 
         public DatabaseConnection()
         {
             databaseName = ConnectionHelper.ConnectionStringValue("GroceryAppDb");
-            var fileName = string.IsNullOrWhiteSpace(databaseName) ? "grocery.db" : Path.GetFileName(databaseName);
-
-            // Create DB under Grocery.App output folder: <AppBase>\GroceryDb\grocery.db
-            string appBase = AppContext.BaseDirectory;
-            string dbDir = Path.Combine(appBase, "GroceryDb");
-            Directory.CreateDirectory(dbDir);
-            string dbPath = Path.Combine(dbDir, fileName);
-
-            var csb = new SqliteConnectionStringBuilder
-            {
-                DataSource = dbPath,
-                Mode = SqliteOpenMode.ReadWriteCreate,
-                Cache = SqliteCacheMode.Shared
-            };
-
-            Connection = new SqliteConnection(csb.ConnectionString);
-
-            OpenConnection();
-            using (var cmd = Connection.CreateCommand())
-            {
-                cmd.CommandText = "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA busy_timeout=5000;";
-                cmd.ExecuteNonQuery();
-            }
-            CloseConnection();
+            //string workingDirectory = Environment.CurrentDirectory;
+            string projectDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string dbpath = "Data Source="+ Path.Combine(projectDirectory + databaseName);
+            Connection = new SqliteConnection(dbpath);
         }
 
         protected void OpenConnection()
@@ -65,6 +41,7 @@ namespace Grocery.Core.Data
         {
             OpenConnection();
             var transaction = Connection.BeginTransaction();
+
             try
             {
                 linesToInsert.ForEach(l => Connection.ExecuteNonQuery(l));

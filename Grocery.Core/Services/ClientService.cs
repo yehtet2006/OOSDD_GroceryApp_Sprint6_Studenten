@@ -32,5 +32,10 @@ namespace Grocery.Core.Services
             List<Client> clients = _clientRepository.GetAll();
             return clients;
         }
+
+        public bool IsAdmin(Client client)
+        {
+            return _clientRepository.IsAdmin(client);
+        }
     }
 }
