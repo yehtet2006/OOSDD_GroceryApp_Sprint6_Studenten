@@ -35,5 +35,10 @@ namespace Grocery.Core.Data.Repositories
         {
             return clientList;
         }
+
+        public bool IsAdmin(Client client)
+        {
+            return client.Role == Role.Admin;
+        }
     }
 }
